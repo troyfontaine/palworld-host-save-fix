@@ -19,17 +19,45 @@ The bug happens because players are identified and correlated to their save via 
 
 To fix this bug, we've made a script that takes the GUID of the player on the new server and applies it to the player save from the old server so that the new server will use the player save from the old server.
 
+## Common Paths
+
 ## Usage
 
+Before you start, ensure that you always keep a backup copy of your save directory!
+
+### Windows co-op to Windows Dedicated Server
+
 Steps:
-1. **Copy** (This is an experimental script and has known bugs so always keep a backup copy of your save.) your desired save's folder from `C:\Users\<username>\AppData\Local\Pal\Saved\SaveGames\<random_numbers>` to your dedicated server.
+
+1. **Copy** (This is an experimental script and has known bugs so always keep a backup copy of your save.) your desired save's folder from `C:\Users\<username>\AppData\Local\Pal\Saved\SaveGames\<random_numbers>\` to your dedicated server
 2. In the `PalServer\Pal\Saved\Config\WindowsServer\GameUserSettings.ini` file, change the `DedicatedServerName` to match your save's folder name. For example, if your save's folder name is `2E85FD38BAA792EB1D4C09386F3A3CDA`, the `DedicatedServerName` changes to `DedicatedServerName=2E85FD38BAA792EB1D4C09386F3A3CDA`.
 3. Delete `PalServer\Pal\Saved\SaveGames\0\<your_save_here>\WorldOption.sav` to allow modification of `PalWorldSettings.ini`. Players will have to choose their respawn point again, but nothing else is affected as far as I can tell.
 4. Confirm you can connect to your save on the dedicated server and that the world is the one in the save.
 5. Afterwards, create a new character on the dedicated server. A new `.sav` file should appear in `PalServer\Pal\Saved\SaveGames\0\<your_save_here>\Players`.
 6. The name of that new `.sav` file is the co-op host's new GUID.  Shut the server down and follow the next instructions using the GUI (easy) or the Terminal (hard) approch. Remember this GUID for the Terminal approach.
 
+### Windows co-op to Linux Dedicated Server
+
+The way steamcmd operates on Linux is a bit odd.  If you don't already have a `~/.steam` directory in your `steam` user's home directory, then Steam will create a `~/Steam` directory.  If you add a `.steam` directory after that-then any attempts to update the PalWorld dedicated server will be installed there instead.  You will have to re-map the GUID for each user one at a time-this can be very time consuming!
+
+Steps:
+
+1. **Copy** (This is an experimental script and has known bugs so always keep a backup copy of your save.) your desired world folder's save state from `C:\Users\<username>\AppData\Local\Pal\Saved\SaveGames\<random_numbers>\<random_letters_and_numbers>` to your dedicated server
+2. In the `/home/steam/.steam/steam/steamapps/common/PalServer/Pal/Saved/Config/LinuxServer/GameUserSettings.ini` file, change the `DedicatedServerName=` value to match the copied world save directory
+3. Delete `/home/steam/.steam/steam/steamapps/common/PalServer/Pal/Saved/0/<random_letters_and_numbers>/WorldOption.sav` to allow modification of `PalWorldSettings.ini`
+4. Have the original host connect to the server, create a character then disconnect
+5. Stop the dedicated server and using the terminal, navigate to the location in the world save where the player save files are stored, it should be `/home/steam/.steam/steam/steamapps/common/PalServer/Pal/Saved/0/<random_letters_and_numbers>/Players` and then run the command `ls -lah` to view the creation dates on the users, the host should have the GUID of all zeroes and ending in `1`, you will still want to copy it down though
+6. In the same directory, locate the newest player save file-that is the GUID you will need to use with this tool
+7. Clone this repository to the home directory of your steam user using Git
+8. Run the below command, replacing the paths as necessary
+
+```bash
+python fix_host_save.py <save_path> <new_guid> <old_guid>
+```
+
+
 ### GUI
+
 Download and run the .exe found in the [latest realese](https://github.com/JannikBirn/palworld-host-save-fix/releases). Start the .exe and follow the next instructions. **(If the GUI is sometimes not responding, just wait it out, it is duing some expansive IO operations and will finsih)**
 
 Select the Level.sav file **of your Server**.
